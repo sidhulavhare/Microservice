@@ -8,11 +8,10 @@ pipeline {
         IMAGE_TAG = "latest"
         ECR_URL = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}"
     }
-
         stage('Login to AWS ECR') {
             steps {
                 script {
-                    sh "aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URL"
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 851725270304.dkr.ecr.us-east-1.amazonaws.com
                 }
             }
         }
@@ -21,7 +20,7 @@ pipeline {
             steps {
                 script {
                     dir('src'){
-                        sh "docker build -t ${ECR_URL}:${IMAGE_TAG} ."
+                       docker build -t adservice .
                     }
                 
                 }
@@ -31,7 +30,8 @@ pipeline {
         stage('Push Docker Image to AWS ECR') {
             steps {
                 script {
-                    sh "docker push ${ECR_URL}:${IMAGE_TAG}"
+                    sh "docker tag adservice:latest 851725270304.dkr.ecr.us-east-1.amazonaws.com/adservice:latest"
+                    sh "docker push 851725270304.dkr.ecr.us-east-1.amazonaws.com/adservice:latest"
                 }
             }
         }
