@@ -9,6 +9,15 @@ pipeline {
     }
 
 
+    stages {
+        stage('Checkout Source Code') {
+            steps {
+                echo 'Checking out source code...'
+                // Replace the URL and branch with your repo details
+                git branch: 'adservice', url: 'https://github.com/sidhulavhare/Microservice.git'
+            }
+        }
+
         stage('AWS Login & Create ECR Repo') {
             steps {
                 withAWS(credentials: 'aws-jenkins-credentials', region: "${AWS_REGION}") {
@@ -25,16 +34,17 @@ pipeline {
             }
         }
 
-       stage('Build Docker Image') {
-    steps {
-        dir('src') {  // Repo root
-            sh '''
-            echo "Building Docker image..."
-            docker build -t my-app-repo:12  .
-            '''
+        stage('Build Docker Image') {
+            steps {
+                dir('src') {  // Change 'src' if your Dockerfile is elsewhere
+                    sh '''
+                    echo "Building Docker image..."
+                    docker build -t $REPO_NAME:$IMAGE_TAG .
+                    '''
+                }
+            }
         }
-    }
-}
+
         stage('Push Docker Image to ECR') {
             steps {
                 sh '''
@@ -46,3 +56,4 @@ pipeline {
         }
     }
 }
+
