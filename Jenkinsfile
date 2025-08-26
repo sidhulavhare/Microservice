@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_REGION     = "ap-south-1"
-        AWS_ACCOUNT_ID = "427601800855"
+        // AWS_ACCOUNT_ID = "427601800855"
         REPO_NAME      = "productcatlogservice"
         IMAGE_TAG      = "${BUILD_NUMBER}"
     }
