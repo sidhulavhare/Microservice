@@ -36,7 +36,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                dir('src') {  // Change 'src' if your Dockerfile is elsewhere
+                dir('adservice') {  // Change 'src' if your Dockerfile is elsewhere
                     sh '''
                     echo "Building Docker image..."
                     docker build -t $REPO_NAME:$IMAGE_TAG .
