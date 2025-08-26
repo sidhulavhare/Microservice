@@ -31,17 +31,16 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+       stage('Build Docker Image') {
     steps {
-        dir('src') {  // '.' means the repo root after checkout
+        dir('.') {  // Repo root
             sh '''
             echo "Building Docker image..."
-            docker build -t $REPO_NAME:$IMAGE_TAG -f .
+            docker build -t my-app-repo:12 -f src/Dockerfile .
             '''
         }
     }
 }
-
         stage('Push Docker Image to ECR') {
             steps {
                 sh '''
