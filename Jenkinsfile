@@ -8,12 +8,6 @@ pipeline {
         IMAGE_TAG      = "${BUILD_NUMBER}"
     }
 
-    stages {
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/sidhulavhare/Microservice.git'
-            }
-        }
 
         stage('AWS Login & Create ECR Repo') {
             steps {
@@ -36,7 +30,7 @@ pipeline {
         dir('src') {  // Repo root
             sh '''
             echo "Building Docker image..."
-            docker build -t my-app-repo:12 -f Dockerfile .
+            docker build -t my-app-repo:12  .
             '''
         }
     }
