@@ -6,7 +6,7 @@ pipeline {
         AWS_ACCOUNT_ID = "184295854358"                    // update with your AWS account ID
         REPO_NAME      = "my-app-repo"                     // your ECR repo name
         IMAGE_TAG      = "latest"                          // or use BUILD_NUMBER for unique tag
-        DOCKER_DIR     = "app"                             // folder path containing your Dockerfile
+                                                        // folder path containing your Dockerfile
     }
 
     stages {
@@ -29,12 +29,10 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                dir("${DOCKER_DIR}") {   // go inside Dockerfile folder
-                    script {
-                        sh """
-                        docker build -t ${REPO_NAME}:${IMAGE_TAG} .
-                        """
-                    }
+                script {
+                    sh """
+                    docker build -t ${REPO_NAME}:${IMAGE_TAG} .
+                    """
                 }
             }
         }
