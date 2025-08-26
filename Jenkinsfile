@@ -32,13 +32,15 @@ pipeline {
         }
 
         stage('Build Docker Image') {
-            steps {
-                sh '''
-                echo "Building Docker image..."
-                docker build -t $REPO_NAME:$IMAGE_TAG .
-                '''
-            }
+    steps {
+        dir('src') {  // '.' means the repo root after checkout
+            sh '''
+            echo "Building Docker image..."
+            docker build -t $REPO_NAME:$IMAGE_TAG -f Dockerfile .
+            '''
         }
+    }
+}
 
         stage('Push Docker Image to ECR') {
             steps {
