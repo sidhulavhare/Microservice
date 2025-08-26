@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_REGION     = "ap-south-1"                       // update with your AWS region
-        AWS_ACCOUNT_ID = "184295854358"                    // update with your AWS account ID
+        AWS_ACCOUNT_ID = "427601800855"                    // update with your AWS account ID
         REPO_NAME      = "my-app-repo"                     // your ECR repo name
         IMAGE_TAG      = "latest"                          // or use BUILD_NUMBER for unique tag
                                                         // folder path containing your Dockerfile
