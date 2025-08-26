@@ -36,7 +36,7 @@ pipeline {
         dir('src') {  // '.' means the repo root after checkout
             sh '''
             echo "Building Docker image..."
-            docker build -t $REPO_NAME:$IMAGE_TAG -f Dockerfile .
+            docker build -t $REPO_NAME:$IMAGE_TAG -f .
             '''
         }
     }
