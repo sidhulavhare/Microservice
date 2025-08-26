@@ -36,7 +36,7 @@ pipeline {
         dir('.') {  // Repo root
             sh '''
             echo "Building Docker image..."
-            docker build -t my-app-repo:12 -f src/Dockerfile .
+            docker build -t my-app-repo:12 -f Dockerfile .
             '''
         }
     }
