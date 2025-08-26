@@ -33,7 +33,7 @@ pipeline {
 
        stage('Build Docker Image') {
     steps {
-        dir('.') {  // Repo root
+        dir('src') {  // Repo root
             sh '''
             echo "Building Docker image..."
             docker build -t my-app-repo:12 -f Dockerfile .
