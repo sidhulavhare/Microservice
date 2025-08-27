@@ -16,7 +16,7 @@ spec:
       serviceAccountName: default
       containers:
         - name: server
-          image: 427601800855.dkr.ecr.ap-south-1.amazonaws.com/frontend:2
+          image: 427601800855.dkr.ecr.ap-south-1.amazonaws.com/frontend:4
           ports:
           - containerPort: 8081
           readinessProbe:
