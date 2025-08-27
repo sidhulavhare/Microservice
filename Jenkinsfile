@@ -13,7 +13,8 @@ pipeline {
                     serverUrl: 'https://4F5AECD6E44A2ADCC46E579237B5B6AC.gr7.ap-south-1.eks.amazonaws.com'
                 ]]) {
                     sh '''
-                        kubectl apply -f adservice.yml -n webapps
+                        kubectl apply -f k8s/adservice.yml -n webapps
+
                     '''
                 }
             }
