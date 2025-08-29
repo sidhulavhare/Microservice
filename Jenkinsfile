@@ -36,7 +36,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                dir('/var/lib/jenkins/workspace/10_mic_frontend/') {  // Change 'src' if your Dockerfile is elsewhere
+                dir('/var/lib/jenkins/workspace/project_frontend/') {  // Change 'src' if your Dockerfile is elsewhere
                     sh '''
                     echo "Building Docker image..."
                     docker build -t $REPO_NAME:$IMAGE_TAG .
