@@ -3,24 +3,22 @@ pipeline {
 
     environment {
         AWS_REGION     = "ap-south-1"
-        AWS_ACCOUNT_ID = "427601800855"
+        AWS_ACCOUNT_ID = "427601800855"   // ✅ fix with your real 12-digit AWS account ID
         REPO_NAME      = "my-app-repo"
         IMAGE_TAG      = "${BUILD_NUMBER}"
     }
-
 
     stages {
         stage('Checkout Source Code') {
             steps {
                 echo 'Checking out source code...'
-                // Replace the URL and branch with your repo details
                 git branch: 'adservice', url: 'https://github.com/sidhulavhare/Microservice.git'
             }
         }
 
         stage('AWS Login & Create ECR Repo') {
             steps {
-                withAWS(credentials: 'aws-jenkins-credentials', region: "${AWS_REGION}") {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-jenkins-credentials']]) {
                     sh '''
                     echo "Logging into AWS ECR..."
                     aws ecr get-login-password --region $AWS_REGION | \
@@ -36,12 +34,10 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                dir('/var/lib/jenkins/workspace/project_adservice/') {  // Change 'src' if your Dockerfile is elsewhere
-                    sh '''
-                    echo "Building Docker image..."
-                    docker build -t $REPO_NAME:$IMAGE_TAG .
-                    '''
-                }
+                sh '''
+                echo "Building Docker image..."
+                docker build -t $REPO_NAME:$IMAGE_TAG .
+                '''
             }
         }
 
@@ -56,4 +52,3 @@ pipeline {
         }
     }
 }
-
