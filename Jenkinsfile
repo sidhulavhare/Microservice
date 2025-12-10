@@ -4,7 +4,7 @@ pipeline {
     environment {
         AWS_REGION     = "ap-south-1"
         AWS_ACCOUNT_ID = "427601800855"   // ✅ fix with your real 12-digit AWS account ID
-        REPO_NAME      = "my-app-repo"
+        REPO_NAME      = "adservice"
         IMAGE_TAG      = "${BUILD_NUMBER}"
     }
 
