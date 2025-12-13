@@ -14,7 +14,7 @@ pipeline {
             steps {
                 echo 'Checking out source code...'
                 // Replace the URL and branch with your repo details
-                git branch: 'adservice', url: 'https://github.com/sidhulavhare/Microservice.git'
+                git branch: 'frontend', url: 'https://github.com/sidhulavhare/Microservice.git'
             }
         }
 
@@ -36,7 +36,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                dir('/var/lib/jenkins/workspace/project_frontend/') {  // Change 'src' if your Dockerfile is elsewhere
+                dir('/var/lib/jenkins/workspace/dev-frontend/') {  // Change 'src' if your Dockerfile is elsewhere
                     sh '''
                     echo "Building Docker image..."
                     docker build -t $REPO_NAME:$IMAGE_TAG .
