@@ -83,7 +83,7 @@ pipeline {
             echo "Docker image pushed successfully with tag: ${IMAGE_TAG}"
         }
         failure {
-            echo "Build failed!"
+            echo "your Build failed!"
         }
     }
 }
