@@ -19,7 +19,7 @@ pipeline {
         stage('Checkout Source Code') {
             steps {
                 echo 'Checking out source code...'
-                git branch: 'adservice', url: 'https://github.com/sidhulavhare/Microservice.git'
+                git branch: 'checkoutservie', url: 'https://github.com/sidhulavhare/Microservice.git'
             }
         }
 
