@@ -5,13 +5,13 @@ pipeline {
         AWS_REGION     = "ap-south-1"
         AWS_ACCOUNT_ID = "427601800855"
         REPO_NAME      = "checkoutservice"
-        IMAGE_TAG      = "" // Will be set dynamically from last commit
+        IMAGE_TAG      = "latest" // default fallback
     }
 
     stages {
-        stage('Clean Workspace'){
+        stage('Clean Workspace') {
             steps {
-                echo 'Cleaning the workspace before starting the build...'
+                echo 'Cleaning the workspace before starting...'
                 deleteDir()
             }
         }
@@ -26,8 +26,10 @@ pipeline {
         stage('Set Build Tag') {
             steps {
                 script {
-                    // Get short commit SHA as IMAGE_TAG
-                    env.IMAGE_TAG = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    def commitSha = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    if (commitSha) {
+                        env.IMAGE_TAG = commitSha
+                    }
                     echo "Using IMAGE_TAG=${env.IMAGE_TAG}"
                 }
             }
@@ -51,21 +53,22 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                // Use current workspace instead of hardcoded path
                 script {
-                    echo "Building Docker image with tag $IMAGE_TAG..."
-                    sh "docker build -t $REPO_NAME:$IMAGE_TAG ${env.WORKSPACE}"
+                    echo "Building Docker image: $REPO_NAME:$IMAGE_TAG"
+                    sh "docker build -t $REPO_NAME:$IMAGE_TAG ."
                 }
             }
         }
 
         stage('Push Docker Image to ECR') {
             steps {
-                sh '''
-                echo "Tagging and pushing Docker image..."
-                docker tag $REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG
-                docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG
-                '''
+                script {
+                    echo "Tagging and pushing Docker image..."
+                    sh """
+                    docker tag $REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG
+                    docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG
+                    """
+                }
             }
         }
     }
