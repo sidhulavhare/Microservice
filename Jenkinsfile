@@ -8,8 +8,14 @@ pipeline {
         IMAGE_TAG      = "${BUILD_NUMBER}"
     }
 
-
     stages {
+        stage('Clean Workspace') {
+            steps {
+                echo 'Cleaning workspace before starting...'
+                deleteDir()  // Deletes all files in the current workspace
+            }
+        }
+
         stage('Checkout Source Code') {
             steps {
                 echo 'Checking out source code...'
@@ -36,7 +42,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                dir('/var/lib/jenkins/workspace/dev-frontend/') {  // Change 'src' if your Dockerfile is elsewhere
+                dir('/var/lib/jenkins/workspace/dev-frontend/') {  // Change path if Dockerfile is elsewhere
                     sh '''
                     echo "Building Docker image..."
                     docker build -t $REPO_NAME:$IMAGE_TAG .
