@@ -1,58 +1,89 @@
 pipeline {
     agent any
 
+    // Global variables
     environment {
         AWS_REGION     = "ap-south-1"
         AWS_ACCOUNT_ID = "427601800855"
-        REPO_NAME      = "productcatlogservice"
-        IMAGE_TAG      = "${BUILD_NUMBER}"
+        REPO_NAME      = "productcatalogservice"
     }
 
-
     stages {
-        stage('Checkout Source Code') {
+
+        // 1️⃣ Clean old files
+        stage('Clean Workspace') {
             steps {
-                echo 'Checking out source code...'
-                // Replace the URL and branch with your repo details
-                git branch: 'adservice', url: 'https://github.com/sidhulavhare/Microservice.git'
+                deleteDir()
             }
         }
 
-        stage('AWS Login & Create ECR Repo') {
+        // 2️⃣ Clone Git repository
+        stage('Checkout Code') {
             steps {
-                withAWS(credentials: 'aws-jenkins-credentials', region: "${AWS_REGION}") {
-                    sh '''
-                    echo "Logging into AWS ECR..."
-                    aws ecr get-login-password --region $AWS_REGION | \
-                    docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+                git branch: 'productcatalogservice',
+                    url: 'https://github.com/sidhulavhare/Microservice.git'
+            }
+        }
 
-                    echo "Check or create ECR repository..."
-                    aws ecr describe-repositories --repository-names $REPO_NAME --region $AWS_REGION || \
-                    aws ecr create-repository --repository-name $REPO_NAME --region $AWS_REGION
-                    '''
+        // 3️⃣ Get last commit message and use it as Docker tag
+        stage('Set Image Tag') {
+            steps {
+                script {
+                    // Get last commit message
+                    def commitMsg = sh(
+                        script: "git log -1 --pretty=%s",
+                        returnStdout: true
+                    ).trim()
+
+                    // Convert to Docker-safe tag
+                    env.IMAGE_TAG = commitMsg.replaceAll('[^a-zA-Z0-9_.-]', '-')
+
+                    echo "Image Tag: ${env.IMAGE_TAG}"
                 }
             }
         }
 
-        stage('Build Docker Image') {
+        // 4️⃣ Login to AWS ECR
+        stage('AWS Login') {
             steps {
-                dir('/var/lib/jenkins/workspace/project_productcatalogservice') {  // Change 'src' if your Dockerfile is elsewhere
-                    sh '''
-                    echo "Building Docker image..."
-                    docker build -t $REPO_NAME:$IMAGE_TAG .
-                    '''
+                withAWS(credentials: 'aws-jenkins-credentials', region: AWS_REGION) {
+                    sh """
+                    aws ecr get-login-password --region ${AWS_REGION} | \
+                    docker login --username AWS --password-stdin \
+                    ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                    aws ecr describe-repositories --repository-names ${REPO_NAME} || \
+                    aws ecr create-repository --repository-name ${REPO_NAME}
+
+                    """
                 }
             }
         }
 
-        stage('Push Docker Image to ECR') {
+        // 5️⃣ Build Docker image
+        stage('Build Image') {
             steps {
-                sh '''
-                echo "Tagging and pushing Docker image..."
-                docker tag $REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG
-                docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG
-                '''
+                sh """
+                docker build -t ${REPO_NAME}:${IMAGE_TAG} .
+                """
             }
+        }
+
+        // 6️⃣ Push Docker image to ECR
+        stage('Push Image') {
+            steps {
+                sh """
+                IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}:${IMAGE_TAG}
+                docker tag ${REPO_NAME}:${IMAGE_TAG} \$IMAGE_URI
+                docker push \$IMAGE_URI
+                """
+            }
+        }
+    }
+
+    // Always clean workspace after build
+    post {
+        always {
+            deleteDir()
         }
     }
 }
