@@ -10,7 +10,7 @@ pipeline {
 
     stages {
         stage('Clean Workspace'){
-            steps{
+            steps {
                 echo 'Cleaning the workspace before starting...'
                 deleteDir()
             }
@@ -26,7 +26,7 @@ pipeline {
         stage('Set Build Tag') {
             steps {
                 script {
-                    // Use short commit SHA as IMAGE_TAG
+                    // Get short commit SHA as IMAGE_TAG
                     env.IMAGE_TAG = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                     echo "Using IMAGE_TAG=${env.IMAGE_TAG}"
                 }
@@ -51,11 +51,10 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                dir('/var/lib/jenkins/workspace/dev-checkoutservice/') {
-                    sh '''
-                    echo "Building Docker image..."
-                    docker build -t $REPO_NAME:$IMAGE_TAG .
-                    '''
+                // Use current workspace instead of hardcoded path
+                script {
+                    echo "Building Docker image with tag $IMAGE_TAG..."
+                    sh "docker build -t $REPO_NAME:$IMAGE_TAG ${env.WORKSPACE}"
                 }
             }
         }
