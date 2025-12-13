@@ -83,7 +83,7 @@ pipeline {
 
     post {
         success {
-            echo "✅ Image pushed: ${IMAGE_TAG}"
+            echo "✅ Image pushed sucess: ${IMAGE_TAG}"
         }
         always {
             deleteDir()
