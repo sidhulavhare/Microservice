@@ -5,7 +5,6 @@ pipeline {
         AWS_REGION     = "ap-south-1"
         AWS_ACCOUNT_ID = "427601800855"
         REPO_NAME      = "checkoutservice"
-        IMAGE_TAG      = "temp"   // placeholder (must NOT be empty)
     }
 
     stages {
@@ -16,7 +15,7 @@ pipeline {
             }
         }
 
-        stage('Checkout Source Code') {
+        stage('Checkout Code') {
             steps {
                 git branch: 'checkoutservice',
                     url: 'https://github.com/sidhulavhare/Microservice.git'
@@ -26,21 +25,20 @@ pipeline {
         stage('Set Image Tag (Last Commit Message)') {
             steps {
                 script {
-                    def commitMsg = sh(
+                    def msg = sh(
                         script: "git log -1 --pretty=%s",
                         returnStdout: true
                     ).trim()
 
-                    def shortSha = sh(
+                    def sha = sh(
                         script: "git rev-parse --short HEAD",
                         returnStdout: true
                     ).trim()
 
                     // sanitize commit message
-                    commitMsg = commitMsg.replaceAll("[^a-zA-Z0-9_.-]", "-")
+                    msg = msg.replaceAll('[^a-zA-Z0-9_.-]', '-')
 
-                    // fallback if commit message becomes empty
-                    env.IMAGE_TAG = commitMsg ? commitMsg : shortSha
+                    env.IMAGE_TAG = msg ?: sha
 
                     echo "Docker image tag: ${env.IMAGE_TAG}"
                 }
@@ -55,8 +53,8 @@ pipeline {
                     docker login --username AWS --password-stdin \
                     $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
-                    aws ecr describe-repositories --repository-names $REPO_NAME \
-                    || aws ecr create-repository --repository-name $REPO_NAME
+                    aws ecr describe-repositories --repository-names $REPO_NAME ||
+                    aws ecr create-repository --repository-name $REPO_NAME
                     """
                 }
             }
@@ -73,18 +71,15 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 sh """
-                FULL_TAG=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG
-                docker tag $REPO_NAME:$IMAGE_TAG $FULL_TAG
-                docker push $FULL_TAG
+                IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG
+                docker tag $REPO_NAME:$IMAGE_TAG $IMAGE_URI
+                docker push $IMAGE_URI
                 """
             }
         }
     }
 
     post {
-        success {
-            echo "✅ Image pushed sucess: ${IMAGE_TAG}"
-        }
         always {
             deleteDir()
         }
