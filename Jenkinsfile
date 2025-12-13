@@ -5,16 +5,31 @@ pipeline {
         AWS_REGION     = "ap-south-1"
         AWS_ACCOUNT_ID = "427601800855"
         REPO_NAME      = "checkoutservice"
-        IMAGE_TAG      = "${BUILD_NUMBER}"
+        IMAGE_TAG      = "" // Will be set dynamically from last commit
     }
 
-
     stages {
+        stage('Clean Workspace'){
+            steps{
+                echo 'Cleaning the workspace before starting...'
+                deleteDir()
+            }
+        }
+
         stage('Checkout Source Code') {
             steps {
                 echo 'Checking out source code...'
-                // Replace the URL and branch with your repo details
                 git branch: 'adservice', url: 'https://github.com/sidhulavhare/Microservice.git'
+            }
+        }
+
+        stage('Set Build Tag') {
+            steps {
+                script {
+                    // Use short commit SHA as IMAGE_TAG
+                    env.IMAGE_TAG = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    echo "Using IMAGE_TAG=${env.IMAGE_TAG}"
+                }
             }
         }
 
@@ -36,7 +51,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                dir('/var/lib/jenkins/workspace/project_checkoutservice/') {  // Change 'src' if your Dockerfile is elsewhere
+                dir('/var/lib/jenkins/workspace/dev-checkoutservice/') {
                     sh '''
                     echo "Building Docker image..."
                     docker build -t $REPO_NAME:$IMAGE_TAG .
