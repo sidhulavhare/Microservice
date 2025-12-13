@@ -30,15 +30,10 @@ pipeline {
                         returnStdout: true
                     ).trim()
 
-                    def sha = sh(
-                        script: "git rev-parse --short HEAD",
-                        returnStdout: true
-                    ).trim()
-
-                    // sanitize commit message
+                    // make docker-safe tag
                     msg = msg.replaceAll('[^a-zA-Z0-9_.-]', '-')
 
-                    env.IMAGE_TAG = msg ?: sha
+                    env.IMAGE_TAG = msg
 
                     echo "Docker image tag: ${env.IMAGE_TAG}"
                 }
@@ -49,12 +44,12 @@ pipeline {
             steps {
                 withAWS(credentials: 'aws-jenkins-credentials', region: AWS_REGION) {
                     sh """
-                    aws ecr get-login-password --region $AWS_REGION |
+                    aws ecr get-login-password --region ${AWS_REGION} | \
                     docker login --username AWS --password-stdin \
-                    $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+                    ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
-                    aws ecr describe-repositories --repository-names $REPO_NAME ||
-                    aws ecr create-repository --repository-name $REPO_NAME
+                    aws ecr describe-repositories --repository-names ${REPO_NAME} || \
+                    aws ecr create-repository --repository-name ${REPO_NAME}
                     """
                 }
             }
@@ -63,7 +58,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh """
-                docker build -t $REPO_NAME:$IMAGE_TAG .
+                docker build -t ${REPO_NAME}:${IMAGE_TAG} .
                 """
             }
         }
@@ -71,9 +66,9 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 sh """
-                IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG
-                docker tag $REPO_NAME:$IMAGE_TAG $IMAGE_URI
-                docker push $IMAGE_URI
+                IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}:${IMAGE_TAG}
+                docker tag ${REPO_NAME}:${IMAGE_TAG} \$IMAGE_URI
+                docker push \$IMAGE_URI
                 """
             }
         }
