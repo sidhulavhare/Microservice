@@ -43,7 +43,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                dir('/var/lib/jenkins/workspace/dev-cartservice/') {  // Change 'src' if your Dockerfile is elsewhere
+                dir('/var/lib/jenkins/workspace/dev-cartservice/src') {  // Change 'src' if your Dockerfile is elsewhere
                     sh '''
                     echo "Building Docker image..."
                     docker build -t $REPO_NAME:$IMAGE_TAG .
